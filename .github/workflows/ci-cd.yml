@@ -1,0 +1,80 @@
+name: Playwright Java CI/CD
+
+on:
+  push:
+    branches: [ "main", "master", "develop" ]
+    tags: [ "v*" ]
+  pull_request:
+    branches: [ "main", "master", "develop" ]
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+
+      - name: Compile project
+        run: mvn -B -ntp clean test-compile
+
+      - name: Install Playwright browsers
+        run: mvn -B -ntp exec:java -Dexec.mainClass=com.microsoft.playwright.CLI -Dexec.args="install --with-deps chromium"
+
+      - name: Run smoke suite
+        run: mvn -B -ntp test -Psmoke -Dheadless=true
+
+      - name: Run regression suite
+        run: mvn -B -ntp test -Pregression -Dheadless=true
+
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-test-artifacts
+          path: |
+            target/surefire-reports/**
+            allure-results/**
+            test-results/**
+          if-no-files-found: ignore
+          retention-days: 14
+
+  release:
+    name: Release Artifact
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build-and-test
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+
+      - name: Build package
+        run: mvn -B -ntp -DskipTests package
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            target/*.jar
