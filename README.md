@@ -1,6 +1,9 @@
 # Playwright Java Framework (Industrial Structure)
 
 Production-ready Playwright + Java automation framework with layered design, config management, reusable page objects, test tagging, artifact capture, and GitHub Actions CI/CD.
+• chromium → Chrome/Edge engine  
+• firefox → Firefox engine  
+• webkit → Safari-like engine (useful for Apple-browser compatibility testing)
 
 ## 1. Project Structure
 
@@ -112,4 +115,5 @@ Workflow file: `.github/workflows/ci-cd.yml`
 mvn -DskipTests package
 mvn test -Dheadless=true
 mvn test -Dbrowser=webkit
+mvn test "-Pchromium,firefox,webkit" -Dheadless=false  #to run all at once
 ```
