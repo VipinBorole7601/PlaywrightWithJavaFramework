@@ -117,3 +117,9 @@ mvn test -Dheadless=true
 mvn test -Dbrowser=webkit
 mvn test "-Pchromium,firefox,webkit" -Dheadless=false  #to run all at once
 ```
+
+# This is how you can check and update the dependency-updates , plugin updates and releases updates
+
+mvn versions:display-dependency-updates
+mvn versions:display-plugin-updates
+mvn versions:use-latest-releases
