@@ -7,41 +7,31 @@ import com.playwright.framework.driver.PlaywrightManager;
 import com.playwright.framework.pages.HomePage;
 import com.playwright.framework.reports.ExtentReportExtension;
 import com.playwright.framework.utils.ScreenshotUtil;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.api.extension.ExtensionContext;
-import org.junit.jupiter.api.extension.RegisterExtension;
-import org.junit.jupiter.api.extension.TestWatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testng.ITestResult;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.Listeners;
 
-@ExtendWith(ExtentReportExtension.class)
+@Listeners(ExtentReportExtension.class)
 public abstract class BaseTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(BaseTest.class);
     protected HomePage homePage;
 
-    @RegisterExtension
-    TestWatcher screenshotOnFailure = new TestWatcher() {
-        @Override
-        public void testFailed(ExtensionContext context, Throwable cause) {
-            if (currentPage() != null) {
-                ScreenshotUtil.capture(currentPage(), context.getDisplayName());
-            }
-            LOGGER.error("Test failed: {}", context.getDisplayName(), cause);
-        }
-    };
-
-    @BeforeEach
-    void setUp() {
+    protected void setUpForBrowser(String browserName) {
+        System.setProperty("browser", browserName);
         FrameworkConfig config = ConfigManager.load();
         PlaywrightManager.initialize();
         PlaywrightManager.page().navigate(config.baseUrl());
         homePage = new HomePage(PlaywrightManager.page());
     }
 
-    @AfterEach
-    void tearDown() {
+    @AfterMethod(alwaysRun = true)
+    void tearDown(ITestResult result) {
+        if (result.getStatus() == ITestResult.FAILURE && currentPage() != null) {
+            ScreenshotUtil.capture(currentPage(), result.getName());
+            LOGGER.error("Test failed: {}", result.getName(), result.getThrowable());
+        }
         PlaywrightManager.shutdown();
     }
 
