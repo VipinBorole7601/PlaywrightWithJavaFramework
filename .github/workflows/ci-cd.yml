@@ -10,9 +10,15 @@ on:
 
 jobs:
   build-and-test:
-    name: Build and Test
+    name: Test (${{ matrix.suite }} / ${{ matrix.browser }})
     runs-on: ubuntu-latest
     timeout-minutes: 30
+
+    strategy:
+      fail-fast: false
+      matrix:
+        suite: [ smoke, regression ]
+        browser: [ chromium, firefox, webkit ]
 
     steps:
       - name: Checkout
@@ -28,24 +34,56 @@ jobs:
       - name: Compile project
         run: mvn -B -ntp clean test-compile
 
-      - name: Install Playwright browsers
-        run: mvn -B -ntp exec:java -Dexec.mainClass=com.microsoft.playwright.CLI -Dexec.args="install --with-deps chromium"
+      - name: Install Playwright browser (${{ matrix.browser }})
+        run: mvn -B -ntp exec:java -Dexec.mainClass=com.microsoft.playwright.CLI -Dexec.args="install --with-deps ${{ matrix.browser }}"
 
-      - name: Run smoke suite
-        run: mvn -B -ntp test -Psmoke -Dheadless=true
+      - name: Run ${{ matrix.suite }} suite on ${{ matrix.browser }}
+        run: >
+          mvn -B -ntp test
+          -P${{ matrix.suite }}
+          -Dheadless=true
+          -Dbrowser=${{ matrix.browser }}
+          -Dbrowsers=${{ matrix.browser }}
 
-      - name: Run regression suite
-        run: mvn -B -ntp test -Pregression -Dheadless=true
-
-      - name: Upload reports
+      - name: Upload shard artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-test-artifacts
+          name: results-${{ matrix.suite }}-${{ matrix.browser }}
           path: |
             target/surefire-reports/**
             allure-results/**
             test-results/**
+          if-no-files-found: ignore
+          retention-days: 14
+
+  merge-reports:
+    name: Merge Allure Reports
+    needs: build-and-test
+    if: always()
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download all shard artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: shards
+
+      - name: Aggregate allure-results
+        run: |
+          mkdir -p allure-results
+          find shards -type d -name allure-results -exec sh -c 'cp -r "$1"/. allure-results/ 2>/dev/null || true' _ {} \;
+          echo "Aggregated $(ls allure-results 2>/dev/null | wc -l) files"
+
+      - name: Upload merged Allure results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results-merged
+          path: allure-results/**
           if-no-files-found: ignore
           retention-days: 14
 
@@ -78,3 +116,4 @@ jobs:
           generate_release_notes: true
           files: |
             target/*.jar
+

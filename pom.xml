@@ -30,6 +30,9 @@
         <slowMo>0</slowMo>
         <timeoutMs>30000</timeoutMs>
         <test.tags></test.tags>
+        <browsers></browsers>
+        <surefire.forkCount>1</surefire.forkCount>
+        <surefire.threadCount>2</surefire.threadCount>
     </properties>
 
     <dependencies>
@@ -109,8 +112,20 @@
                 <configuration>
                     <groups>${test.tags}</groups>
                     <trimStackTrace>false</trimStackTrace>
+                    <forkCount>${surefire.forkCount}</forkCount>
+                    <reuseForks>true</reuseForks>
+                    <parallel>methods</parallel>
+                    <threadCount>${surefire.threadCount}</threadCount>
+                    <perCoreThreadCount>false</perCoreThreadCount>
+                    <properties>
+                        <property>
+                            <name>dataproviderthreadcount</name>
+                            <value>${surefire.threadCount}</value>
+                        </property>
+                    </properties>
                     <systemPropertyVariables>
                         <browser>${browser}</browser>
+                        <browsers>${browsers}</browsers>
                         <headless>${headless}</headless>
                         <baseUrl>${baseUrl}</baseUrl>
                         <slowMo>${slowMo}</slowMo>

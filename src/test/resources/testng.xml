@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<!--
+    Optional TestNG suite for manual runs (e.g. IDE / `mvn test -DsuiteXmlFile=...`).
+    CI pipelines drive parallelism through the Surefire configuration in pom.xml
+    (<parallel>methods</parallel> + <threadCount>) and filter tests by group with
+    the Maven -Psmoke / -Pregression profiles. Keep this file in sync if you add
+    new test packages.
+-->
+<suite name="PlaywrightSuite" parallel="methods" thread-count="2" data-provider-thread-count="2" verbose="1">
+    <listeners>
+        <listener class-name="com.playwright.framework.reports.ExtentReportExtension"/>
+    </listeners>
+
+    <test name="PlaywrightTests">
+        <packages>
+            <package name="com.playwright.framework.tests"/>
+        </packages>
+    </test>
+</suite>
+

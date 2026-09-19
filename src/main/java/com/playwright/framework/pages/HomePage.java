@@ -15,4 +15,7 @@ public class HomePage extends BasePage {
     public boolean isDocsLinkVisible() {
         return page.getByRole(AriaRole.LINK, new Page.GetByRoleOptions().setName("Get started")).isVisible();
     }
+
+
+
 }
