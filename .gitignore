@@ -43,3 +43,8 @@ test-results/
 allure-results/
 allure-report/
 playwright-report/
+
+### Secrets & auth state ###
+.env
+.env.local
+.auth/

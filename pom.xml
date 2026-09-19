@@ -174,5 +174,12 @@
                 <test.tags>regression</test.tags>
             </properties>
         </profile>
+        <profile>
+            <id>quarantine</id>
+            <properties>
+                <test.tags>flaky</test.tags>
+                <surefire.threadCount>1</surefire.threadCount>
+            </properties>
+        </profile>
     </profiles>
 </project>

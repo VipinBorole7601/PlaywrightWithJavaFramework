@@ -1,0 +1,28 @@
+# Keep the image lean and reproducible: never copy build output, IDE metadata,
+# local secrets, or previously generated artefacts into the container.
+
+.git
+.github
+.idea
+.vscode
+.mvn/wrapper/maven-wrapper.jar.d
+
+target/
+build/
+out/
+
+test-results/
+allure-results/
+allure-report/
+playwright-report/
+
+.auth/
+.env
+.env.local
+*.log
+
+pom.xml.versionsBackup
+
+# OS junk
+.DS_Store
+Thumbs.db

@@ -5,5 +5,9 @@ public record FrameworkConfig(
         String browser,
         boolean headless,
         int timeoutMs,
-        int slowMo) {
+        int slowMo,
+        String env,
+        boolean traceOnFailure,
+        boolean videoOnFailure) {
 }
+
